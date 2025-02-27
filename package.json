@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:generate": "npx drizzle-kit generate",
-    "db:migrate": "npx drizzle-kit migrate"
+    "db:migrate": "npx drizzle-kit migrate",
+    "db:seed": "npx tsx scripts/seed.ts"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -22,7 +23,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -30,9 +32,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.1-canary.1",
     "tailwindcss": "^4",
+    "tsx": "^4.19.3",
     "typescript": "^5"
   }
 }
