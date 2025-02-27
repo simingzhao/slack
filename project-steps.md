@@ -1,7 +1,7 @@
 # Slack Clone Implementation Plan
 
 ## Database Setup
-- [ ] Step 1: Create database schema
+- [x] Step 1: Create database schema
   - **Task**: Define the database schema for profiles, channels, messages, threads, and reactions using Drizzle ORM.
   - **Files**:
     - `db/schema/profiles.ts`: Define profiles table schema (not for authentication, just for user data)
@@ -12,7 +12,7 @@
   - **Step Dependencies**: None
   - **User Instructions**: Ensure your Supabase database is created and the DATABASE_URL is properly set in .env.local file
 
-- [ ] Step 2: Create seed data for profiles and channels
+- [x] Step 2: Create seed data for profiles and channels
   - **Task**: Create a seed script to populate the database with initial profiles and channels
   - **Files**:
     - `db/seed.ts`: Script to seed the database with initial data
@@ -21,7 +21,7 @@
   - **Step Dependencies**: Step 1
   - **User Instructions**: After setting up the schema, run `npm run db:seed` to populate the database with initial data
 
-- [ ] Step 3: Set up database migrations
+- [x] Step 3: Set up database migrations
   - **Task**: Generate and run migrations for the defined schema
   - **Files**:
     - `db/migrations/`: Generated migration files
