@@ -29,7 +29,7 @@
   - **User Instructions**: After generating the schema, run `npm run db:generate` to create migrations and `npm run db:migrate` to apply them
 
 ## UI Components
-- [ ] Step 4: Create basic UI components using shadcn/ui
+- [x] Step 4: Create basic UI components using shadcn/ui
   - **Task**: Set up the foundational UI components needed for the application
   - **Files**:
     - `components/ui/button.tsx`: Button component
@@ -40,7 +40,7 @@
   - **Step Dependencies**: None
   - **User Instructions**: None
 
-- [ ] Step 5: Create application-specific UI components
+- [x] Step 5: Create application-specific UI components
   - **Task**: Create custom components specific to our messaging application
   - **Files**:
     - `components/message-item.tsx`: Component for rendering individual messages
@@ -52,7 +52,7 @@
   - **User Instructions**: None
 
 ## Profile Selection
-- [ ] Step 6: Create profile selection functionality
+- [x] Step 6: Create profile selection functionality
   - **Task**: Since we're not doing authentication, create a component to select which profile to use
   - **Files**:
     - `components/profile-selector.tsx`: Component for selecting a profile
@@ -61,7 +61,7 @@
   - **User Instructions**: None
 
 ## Layout and Navigation
-- [ ] Step 7: Create application layout
+- [x] Step 7: Create application layout
   - **Task**: Create the main application layout with sidebar and content area
   - **Files**:
     - `app/(main)/layout.tsx`: Main application layout with sidebar
