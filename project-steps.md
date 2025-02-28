@@ -89,14 +89,14 @@
   - **Step Dependencies**: Steps 7, 8
   - **User Instructions**: None
 
-- [ ] Step 10: Implement server actions for messages
+- [x] Step 10: Implement server actions for messages
   - **Task**: Create server actions for creating, fetching, editing, and deleting messages
   - **Files**:
     - `app/actions/messages.ts`: Server actions for message operations
   - **Step Dependencies**: Steps 1, 2, 3
   - **User Instructions**: None
 
-- [ ] Step 11: Create individual channel page
+- [x] Step 11: Create individual channel page
   - **Task**: Create the channel page showing messages for a specific channel
   - **Files**:
     - `app/(main)/channels/[channelId]/page.tsx`: Individual channel page
@@ -105,30 +105,32 @@
   - **User Instructions**: None
 
 ## Message Features
-- [ ] Step 12: Implement message threads
+- [x] Step 12: Implement message threads
   - **Task**: Add support for threaded conversations
   - **Files**:
     - `app/actions/threads.ts`: Server actions for thread operations
     - `components/thread-item.tsx`: Component for displaying thread items
     - `components/thread-list.tsx`: Component for displaying a list of thread messages
     - `app/(main)/channels/[channelId]/threads/[messageId]/page.tsx`: Thread view page
+    - `components/thread-container.tsx`: Container component for thread interactions
   - **Step Dependencies**: Steps 10, 11
   - **User Instructions**: None
 
-- [ ] Step 13: Implement message reactions
+- [x] Step 13: Implement message reactions
   - **Task**: Add support for adding emoji reactions to messages
   - **Files**:
     - `app/actions/reactions.ts`: Server actions for reaction operations
     - `components/message-reactions.tsx`: Component for displaying message reactions
     - `components/reaction-picker.tsx`: Component for picking a reaction
+    - `components/ui/popover.tsx`: UI component for the reaction picker popover
   - **Step Dependencies**: Steps 10, 11
   - **User Instructions**: None
 
-- [ ] Step 14: Implement message editing and deletion
+- [x] Step 14: Implement message editing and deletion
   - **Task**: Add support for editing and deleting messages
   - **Files**:
-    - `components/message-actions.tsx`: Component for message actions (edit, delete)
-    - `components/forms/edit-message-form.tsx`: Form for editing messages
+    - `components/message-container.tsx`: Enhanced to support editing and deleting messages
+    - `components/thread-container.tsx`: Component for editing and deleting thread messages
   - **Step Dependencies**: Steps 10, 11
   - **User Instructions**: None
 

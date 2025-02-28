@@ -1,53 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { MessageList } from "./message-list";
-import { MessageInput } from "./message-input";
 import { useRouter } from "next/navigation";
-import { createMessage, deleteMessage, updateMessage } from "@/app/actions/messages";
-import { Message } from "./message-item";
 import { toast } from "sonner";
+import { MessageInput } from "./message-input";
+import { createDirectMessage, deleteDirectMessage, updateDirectMessage } from "@/app/actions/direct-messages";
+import { DirectMessage } from "@/db/schema/direct-messages";
+import { Profile } from "@/db/schema/profiles";
+import { DirectMessageList } from "./direct-message-list";
 
-interface MessageContainerProps {
-  channelId: string;
-  profileId: string;
-  initialMessages: Message[];
+interface DirectMessageContainerProps {
+  recipientProfile: Profile;
+  currentProfileId: string;
+  initialMessages: DirectMessage[];
 }
 
-export function MessageContainer({
-  channelId,
-  profileId,
+export function DirectMessageContainer({
+  recipientProfile,
+  currentProfileId,
   initialMessages,
-}: MessageContainerProps) {
+}: DirectMessageContainerProps) {
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<DirectMessage[]>(initialMessages);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<DirectMessage | null>(null);
   const [editContent, setEditContent] = useState("");
 
   const handleSendMessage = async (content: string) => {
     setIsSubmitting(true);
     
     try {
-      const response = await createMessage(content, channelId);
+      const response = await createDirectMessage(content, recipientProfile.id);
       
       if (response.success && response.data) {
-        // Create a UI version of the message with profile data (optimistic update)
-        const newMessage: Message = {
+        // Create a UI version of the message (optimistic update)
+        const newMessage: DirectMessage = {
           ...response.data,
-          profile: {
-            id: response.data.profileId,
-            name: "You", // This is just a placeholder, the UI will refresh with actual data
-            imageUrl: ""
-          },
-          reactionCount: 0,
-          repliesCount: 0
         };
         
-        // Add the new message to the UI (at the beginning since we're displaying newest first)
+        // Add the new message to the UI
         setMessages((prev) => [newMessage, ...prev]);
         
-        // Refresh the data to get the complete message with profile info
+        // Refresh the data to ensure consistency
         router.refresh();
       } else {
         toast.error(response.error || "Failed to send message");
@@ -58,16 +52,6 @@ export function MessageContainer({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleReply = (messageId: string) => {
-    // Navigate to the thread view
-    router.push(`/channels/${channelId}/threads/${messageId}`);
-  };
-
-  const handleReact = (messageId: string) => {
-    // This will be implemented as part of Step 13
-    toast.info(`Reactions for message ${messageId} will be implemented soon!`);
   };
 
   const handleEdit = (messageId: string) => {
@@ -89,7 +73,7 @@ export function MessageContainer({
     setIsSubmitting(true);
     
     try {
-      const response = await updateMessage(editingMessage.id, editContent);
+      const response = await updateDirectMessage(editingMessage.id, editContent);
       
       if (response.success && response.data) {
         // Update the message in the UI
@@ -118,17 +102,14 @@ export function MessageContainer({
   };
 
   const handleDelete = async (messageId: string) => {
-    const confirmed = confirm("Are you sure you want to delete this message?");
-    if (!confirmed) return;
-    
     try {
-      const response = await deleteMessage(messageId);
+      const response = await deleteDirectMessage(messageId);
       
       if (response.success) {
         // Remove the message from the UI
         setMessages((prev) => prev.filter(m => m.id !== messageId));
         
-        // Refresh the data
+        // Refresh the data to ensure consistency
         router.refresh();
       } else {
         toast.error(response.error || "Failed to delete message");
@@ -140,13 +121,12 @@ export function MessageContainer({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <>
       <div className="flex-1 overflow-y-auto">
-        <MessageList
+        <DirectMessageList
           messages={messages}
-          currentProfileId={profileId}
-          onReply={handleReply}
-          onReact={handleReact}
+          currentProfileId={currentProfileId}
+          recipientProfile={recipientProfile}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
@@ -163,8 +143,8 @@ export function MessageContainer({
             </button>
           </div>
           <MessageInput
-            profileId={profileId}
-            channelId={channelId}
+            profileId={currentProfileId}
+            channelId="" // Not used for DMs
             onSend={handleSaveEdit}
             isDisabled={isSubmitting || !editContent.trim()}
             isLoading={isSubmitting}
@@ -174,14 +154,17 @@ export function MessageContainer({
           />
         </div>
       ) : (
-        <MessageInput
-          profileId={profileId}
-          channelId={channelId}
-          onSend={handleSendMessage}
-          isDisabled={isSubmitting}
-          isLoading={isSubmitting}
-        />
+        <div className="mt-auto">
+          <MessageInput
+            profileId={currentProfileId}
+            channelId="" // Not used for DMs
+            onSend={handleSendMessage}
+            isDisabled={isSubmitting}
+            isLoading={isSubmitting}
+            placeholder={`Message ${recipientProfile.name}`}
+          />
+        </div>
       )}
-    </div>
+    </>
   );
 } 

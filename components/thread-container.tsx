@@ -1,24 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { MessageList } from "./message-list";
-import { MessageInput } from "./message-input";
 import { useRouter } from "next/navigation";
-import { createMessage, deleteMessage, updateMessage } from "@/app/actions/messages";
-import { Message } from "./message-item";
 import { toast } from "sonner";
+import { ThreadList } from "./thread-list";
+import { MessageInput } from "./message-input";
+import { Message } from "./message-item";
+import { createMessage, deleteMessage, updateMessage } from "@/app/actions/messages";
 
-interface MessageContainerProps {
+interface ThreadContainerProps {
   channelId: string;
+  messageId: string;
   profileId: string;
+  parentMessage: Message;
   initialMessages: Message[];
 }
 
-export function MessageContainer({
+export function ThreadContainer({
   channelId,
+  messageId,
   profileId,
+  parentMessage,
   initialMessages,
-}: MessageContainerProps) {
+}: ThreadContainerProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +33,7 @@ export function MessageContainer({
     setIsSubmitting(true);
     
     try {
-      const response = await createMessage(content, channelId);
+      const response = await createMessage(content, channelId, messageId);
       
       if (response.success && response.data) {
         // Create a UI version of the message with profile data (optimistic update)
@@ -44,8 +48,8 @@ export function MessageContainer({
           repliesCount: 0
         };
         
-        // Add the new message to the UI (at the beginning since we're displaying newest first)
-        setMessages((prev) => [newMessage, ...prev]);
+        // Add the new message to the UI
+        setMessages((prev) => [...prev, newMessage]);
         
         // Refresh the data to get the complete message with profile info
         router.refresh();
@@ -60,21 +64,17 @@ export function MessageContainer({
     }
   };
 
-  const handleReply = (messageId: string) => {
-    // Navigate to the thread view
-    router.push(`/channels/${channelId}/threads/${messageId}`);
-  };
-
-  const handleReact = (messageId: string) => {
-    // This will be implemented as part of Step 13
-    toast.info(`Reactions for message ${messageId} will be implemented soon!`);
-  };
-
   const handleEdit = (messageId: string) => {
-    const message = messages.find(m => m.id === messageId);
-    if (message) {
-      setEditingMessage(message);
-      setEditContent(message.content);
+    // Check if it's the parent message or a reply
+    if (messageId === parentMessage.id) {
+      setEditingMessage(parentMessage);
+      setEditContent(parentMessage.content);
+    } else {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        setEditingMessage(message);
+        setEditContent(message.content);
+      }
     }
   };
 
@@ -93,13 +93,20 @@ export function MessageContainer({
       
       if (response.success && response.data) {
         // Update the message in the UI
-        setMessages((prev) => 
-          prev.map(m => 
-            m.id === editingMessage.id 
-              ? { ...m, content: editContent, isEdited: true } 
-              : m
-          )
-        );
+        if (editingMessage.id === parentMessage.id) {
+          // Update parent message
+          parentMessage.content = editContent;
+          parentMessage.isEdited = true;
+        } else {
+          // Update reply message
+          setMessages((prev) => 
+            prev.map(m => 
+              m.id === editingMessage.id 
+                ? { ...m, content: editContent, isEdited: true } 
+                : m
+            )
+          );
+        }
         
         setEditingMessage(null);
         setEditContent("");
@@ -125,11 +132,17 @@ export function MessageContainer({
       const response = await deleteMessage(messageId);
       
       if (response.success) {
-        // Remove the message from the UI
-        setMessages((prev) => prev.filter(m => m.id !== messageId));
-        
-        // Refresh the data
-        router.refresh();
+        if (messageId === parentMessage.id) {
+          // If the parent message is deleted, go back to the channel
+          toast.success("Thread deleted");
+          router.push(`/channels/${channelId}`);
+        } else {
+          // Remove the message from the UI
+          setMessages((prev) => prev.filter(m => m.id !== messageId));
+          
+          // Refresh the data
+          router.refresh();
+        }
       } else {
         toast.error(response.error || "Failed to delete message");
       }
@@ -140,13 +153,12 @@ export function MessageContainer({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <>
       <div className="flex-1 overflow-y-auto">
-        <MessageList
+        <ThreadList
+          parentMessage={parentMessage}
           messages={messages}
           currentProfileId={profileId}
-          onReply={handleReply}
-          onReact={handleReact}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
@@ -174,14 +186,17 @@ export function MessageContainer({
           />
         </div>
       ) : (
-        <MessageInput
-          profileId={profileId}
-          channelId={channelId}
-          onSend={handleSendMessage}
-          isDisabled={isSubmitting}
-          isLoading={isSubmitting}
-        />
+        <div className="mt-auto">
+          <MessageInput
+            profileId={profileId}
+            channelId={channelId}
+            onSend={handleSendMessage}
+            isDisabled={isSubmitting}
+            isLoading={isSubmitting}
+            placeholder="Reply to thread..."
+          />
+        </div>
       )}
-    </div>
+    </>
   );
 } 

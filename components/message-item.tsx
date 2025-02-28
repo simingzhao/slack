@@ -4,8 +4,11 @@ import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, ThumbsUp, Pencil, Trash2 } from "lucide-react";
+import { MessageCircle, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { MessageReactions } from "./message-reactions";
+import { ReactionPicker } from "./reaction-picker";
 
 interface Profile {
   id: string;
@@ -33,6 +36,7 @@ interface MessageItemProps {
   onReact?: (messageId: string) => void;
   onEdit?: (messageId: string) => void;
   onDelete?: (messageId: string) => void;
+  showThreadButton?: boolean;
 }
 
 export function MessageItem({
@@ -42,9 +46,18 @@ export function MessageItem({
   onReact,
   onEdit,
   onDelete,
+  showThreadButton = true,
 }: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const isOwner = message.profileId === currentProfileId;
+  const [showReactions, setShowReactions] = useState(false);
+  
+  const handleReactionSelect = () => {
+    // When a reaction is selected, we refresh the reactions
+    setShowReactions(true);
+    // Also call the parent onReact handler if provided
+    onReact?.(message.id);
+  };
   
   return (
     <div 
@@ -74,19 +87,28 @@ export function MessageItem({
           {message.content}
         </p>
         
+        {/* Show message reactions */}
+        {(showReactions || !!message.reactionCount) && (
+          <MessageReactions
+            messageId={message.id}
+            currentProfileId={currentProfileId}
+            onReactionUpdated={() => onReact?.(message.id)}
+          />
+        )}
+        
         <div className="flex items-center gap-x-2 pt-1">
-          {!!message.reactionCount && (
-            <div className="flex items-center text-xs text-muted-foreground">
-              <ThumbsUp className="h-3.5 w-3.5 mr-1" />
-              {message.reactionCount}
-            </div>
-          )}
-          
           {!!message.repliesCount && (
-            <div className="flex items-center text-xs text-muted-foreground">
-              <MessageCircle className="h-3.5 w-3.5 mr-1" />
-              {message.repliesCount}
-            </div>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="h-5 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Link href={`/channels/${message.channelId}/threads/${message.id}`}>
+                <MessageCircle className="h-3.5 w-3.5 mr-1" />
+                {message.repliesCount} {message.repliesCount === 1 ? 'reply' : 'replies'}
+              </Link>
+            </Button>
           )}
         </div>
       </div>
@@ -96,40 +118,42 @@ export function MessageItem({
           "flex items-center gap-x-2 absolute right-4",
           isOwner ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         )}>
-          <Button
-            onClick={() => onReply?.(message.id)}
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-          >
-            <MessageCircle className="h-4 w-4" />
-          </Button>
-          <Button
-            onClick={() => onReact?.(message.id)}
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-          >
-            <ThumbsUp className="h-4 w-4" />
-          </Button>
+          {showThreadButton && onReply && (
+            <Button
+              onClick={() => onReply(message.id)}
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </Button>
+          )}
+          <ReactionPicker 
+            messageId={message.id}
+            onSelect={handleReactionSelect}
+          />
           {isOwner && (
             <>
-              <Button
-                onClick={() => onEdit?.(message.id)}
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                onClick={() => onDelete?.(message.id)}
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {onEdit && (
+                <Button
+                  onClick={() => onEdit(message.id)}
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  onClick={() => onDelete(message.id)}
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </>
           )}
         </div>
