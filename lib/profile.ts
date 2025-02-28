@@ -4,7 +4,8 @@
 // These only use browser storage APIs and don't access the database
 
 const PROFILE_COOKIE_NAME = 'current-profile-id';
-const DEFAULT_PROFILE_ID = 'profile_1'; // Same default as server-side for testing
+// Remove the hardcoded profile ID since it won't match the UUIDs in the database
+// const DEFAULT_PROFILE_ID = 'profile_1'; // Same default as server-side for testing
 
 /**
  * Save the current profile ID to client storage
@@ -53,11 +54,11 @@ export function hasSelectedProfile(): boolean {
 }
 
 /**
- * Initialize profile with default if none exists
- * This is useful for testing and first-time users
+ * Initialize profile with a specific ID
+ * This should be called after profiles are loaded from the server
  */
-export function initializeDefaultProfile(): void {
-  if (typeof window !== 'undefined' && !getCurrentProfile()) {
-    setCurrentProfile(DEFAULT_PROFILE_ID);
+export function initializeDefaultProfile(profileId: string): void {
+  if (typeof window !== 'undefined' && !getCurrentProfile() && profileId) {
+    setCurrentProfile(profileId);
   }
 } 

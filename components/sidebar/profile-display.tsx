@@ -8,12 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut } from "lucide-react";
-import { getCurrentProfile } from "@/lib/profile";
+import { getCurrentProfile, setCurrentProfile } from "@/lib/profile";
 import { Profile } from "@/db/schema";
 
 export function ProfileDisplay() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -22,6 +23,18 @@ export function ProfileDisplay() {
         const profileId = getCurrentProfile();
         
         if (!profileId) {
+          // If no profile is selected, try to get the first available profile
+          const response = await fetch(`/api/profiles`);
+          if (!response.ok) throw new Error('Failed to load profiles');
+          
+          const data = await response.json();
+          if (data.profiles && data.profiles.length > 0) {
+            // Use the first profile and set it as current
+            setProfile(data.profiles[0]);
+            setCurrentProfile(data.profiles[0].id);
+            return;
+          }
+          
           setLoading(false);
           return;
         }
@@ -34,6 +47,7 @@ export function ProfileDisplay() {
         setProfile(data.profile);
       } catch (error) {
         console.error('Error loading profile:', error);
+        setError('Failed to load profile');
       } finally {
         setLoading(false);
       }
@@ -48,6 +62,17 @@ export function ProfileDisplay() {
         <div className="h-8 w-8 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700" />
         <div className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Link href="/" className="flex w-full items-center space-x-2 rounded-md border px-3 py-2 text-left hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-700">
+        <div className="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+          <span>!</span>
+        </div>
+        <span className="text-sm font-medium">Error: {error}</span>
+      </Link>
     );
   }
 
