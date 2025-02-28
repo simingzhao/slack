@@ -1,10 +1,12 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { SidebarNav } from "@/components/sidebar/sidebar-nav";
 import { SidebarSection } from "@/components/sidebar/sidebar-section";
 import { ProfileDisplay } from "@/components/sidebar/profile-display";
 import { ChannelList } from "@/components/channel-list";
-import { db } from "@/db/db";
 import { Channel as ChannelType } from "@/components/channel-item";
+import { getChannels } from "@/app/actions/channels";
 
 export function Sidebar() {
   const [channels, setChannels] = useState<ChannelType[]>([]);
@@ -14,20 +16,25 @@ export function Sidebar() {
     const fetchChannels = async () => {
       try {
         setIsLoading(true);
-        // Fetch channels from the database - this would be implemented in Step 8
-        const fetchedChannels = await db.query.channels.findMany();
+        // Use the server action instead of direct database access
+        const result = await getChannels();
         
-        // Convert to the Channel interface expected by ChannelList
-        const formattedChannels: ChannelType[] = fetchedChannels.map((channel) => ({
-          id: channel.id,
-          name: channel.name,
-          description: channel.description || "",
-          createdAt: channel.createdAt,
-          updatedAt: channel.updatedAt,
-          isPrivate: channel.type === "private",
-        }));
-        
-        setChannels(formattedChannels);
+        if (result.success && result.data) {
+          // Convert to the Channel interface expected by ChannelList
+          const formattedChannels: ChannelType[] = result.data.map((channel) => ({
+            id: channel.id,
+            name: channel.name,
+            description: channel.description || "",
+            createdAt: channel.createdAt,
+            updatedAt: channel.updatedAt,
+            isPrivate: channel.type === "private",
+          }));
+          
+          setChannels(formattedChannels);
+        } else {
+          console.error("Error fetching channels:", result.error);
+          setChannels([]);
+        }
       } catch (error) {
         console.error("Error fetching channels:", error);
         // Provide some default channels as fallback during development

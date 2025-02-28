@@ -73,7 +73,7 @@
   - **User Instructions**: None
 
 ## Core Functionality
-- [ ] Step 8: Implement server actions for channels
+- [x] Step 8: Implement server actions for channels
   - **Task**: Create server actions for creating and fetching channels
   - **Files**:
     - `app/actions/channels.ts`: Server actions for channel operations
@@ -81,7 +81,7 @@
   - **Step Dependencies**: Steps 1, 2, 3
   - **User Instructions**: None
 
-- [ ] Step 9: Create channels page
+- [x] Step 9: Create channels page
   - **Task**: Implement the channels page that displays a list of channels and allows creating new ones
   - **Files**:
     - `app/(main)/channels/page.tsx`: Channels listing page

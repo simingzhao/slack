@@ -1,10 +1,10 @@
 'use client';
 
-import { db } from '@/db/db';
-import { profiles, Profile } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+// Client-side profile storage and retrieval functions
+// These only use browser storage APIs and don't access the database
 
 const PROFILE_COOKIE_NAME = 'current-profile-id';
+const DEFAULT_PROFILE_ID = 'profile_1'; // Same default as server-side for testing
 
 /**
  * Save the current profile ID to client storage
@@ -53,23 +53,11 @@ export function hasSelectedProfile(): boolean {
 }
 
 /**
- * Get the active profile from the database
+ * Initialize profile with default if none exists
+ * This is useful for testing and first-time users
  */
-export async function getActiveProfile(): Promise<Profile | null> {
-  const profileId = getCurrentProfile();
-  
-  if (!profileId) {
-    return null;
-  }
-  
-  try {
-    const activeProfile = await db.query.profiles.findFirst({
-      where: eq(profiles.id, profileId),
-    });
-    
-    return activeProfile || null;
-  } catch (error) {
-    console.error('Error fetching active profile:', error);
-    return null;
+export function initializeDefaultProfile(): void {
+  if (typeof window !== 'undefined' && !getCurrentProfile()) {
+    setCurrentProfile(DEFAULT_PROFILE_ID);
   }
 } 
