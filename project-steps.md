@@ -135,7 +135,7 @@
   - **User Instructions**: None
 
 ## Direct Messaging
-- [ ] Step 15: Implement direct messaging
+- [x] Step 15: Implement direct messaging
   - **Task**: Add support for direct messaging between profiles
   - **Files**:
     - `app/actions/direct-messages.ts`: Server actions for direct message operations
